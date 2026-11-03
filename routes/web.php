@@ -8,3 +8,4 @@ Route::get('/', function () {
 });
 
 Route::resource('rentals', EquipmentRentalController::class);
+require __DIR__.'/auth.php';
