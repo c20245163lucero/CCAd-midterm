@@ -1,144 +1,135 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Add Equipment Rental</title>
-
+    <title>Create Equipment Rental</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-slate-100 min-h-screen">
 
-<body class="bg-gray-100 min-h-screen">
+<div class="max-w-3xl mx-auto px-6 py-10">
 
-    <div class="container mx-auto px-6 py-10 max-w-4xl">
+    <div class="bg-white rounded-xl shadow-md p-8">
+        <h1 class="text-2xl font-bold text-blue-800 mb-2">
+            Create Equipment Rental
+        </h1>
 
-        <!-- Header -->
-        <div class="mb-8">
-            <a href="{{ route('rentals.index') }}"
-               class="text-blue-600 hover:underline">
-                ← Back to Rentals
-            </a>
+            Enter the rental details and select the equipment.
+        </p>
 
-            <h1 class="text-3xl font-bold text-blue-900 mt-4">
-                Add New Equipment Rental
-            </h1>
+        @if ($errors->any())
+            <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-5">
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+        <p class="text-gray-500 mb-6">
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-            <p class="text-gray-600 mt-2">
-                Enter the diver, dive site, and rental information.
-            </p>
-        </div>
+        <form action="{{ route('rentals.store') }}" method="POST">
+            @csrf
 
-        <!-- Form Card -->
-        <div class="bg-white shadow-lg rounded-xl p-8">
+            <div class="mb-5">
+                <label class="block font-semibold mb-2">Select Diver</label>
+                <select name="diver_id" required
+                    class="w-full border rounded-lg p-3">
+                    <option value="">Choose Diver</option>
+                    @foreach ($divers as $diver)
+                        <option value="{{ $diver->id }}"
+                            {{ old('diver_id') == $diver->id ? 'selected' : '' }}>
+                            {{ $diver->diver_name }}
+                            ({{ $diver->certification_level }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-            @if ($errors->any())
-                <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
-                    <strong>Please fix the following errors:</strong>
+            <div class="mb-5">
+                <label class="block font-semibold mb-2">Select Dive Site</label>
+                <select name="dive_site_id" required
+                    class="w-full border rounded-lg p-3">
+                    <option value="">Choose Dive Site</option>
+                    @foreach ($diveSites as $site)
+                        <option value="{{ $site->id }}"
+                            {{ old('dive_site_id') == $site->id ? 'selected' : '' }}>
+                            {{ $site->site_name }}
+                            ({{ $site->required_max_depth }} meters)
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-                    <ul class="list-disc ml-6 mt-2">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                    <label class="block font-semibold mb-2">Rental Start</label>
+                    <input type="date" name="rental_start"
+                        value="{{ old('rental_start') }}" required
+                        class="w-full border rounded-lg p-3">
                 </div>
-            @endif
 
-            <form action="{{ route('rentals.store') }}" method="POST">
+                <div>
+                    <label class="block font-semibold mb-2">Rental End</label>
+                    <input type="date" name="rental_end"
+                        value="{{ old('rental_end') }}" required
+                        class="w-full border rounded-lg p-3">
+                </div>
+            </div>
 
-                @csrf
+            <div class="mb-6">
+                <h2 class="font-bold text-lg text-blue-800 mb-3">
+                    Available Equipment
+                </h2>
 
-                <!-- Diver -->
-                <div class="mb-6">
-                    <label class="block font-semibold text-gray-700 mb-2">
-                        Select Diver
+                @forelse ($equipment as $item)
+                    <label class="flex items-center justify-between border rounded-lg p-4 mb-3 hover:bg-blue-50">
+                        <div class="flex items-center gap-3">
+                            <input
+                                type="checkbox"
+                                name="items[][dive_equipment_id]"
+                                value="{{ $item->id }}"
+                                {{ in_array($item->id, old('items', []) ?? []) ? 'checked' : '' }}
+                                class="w-4 h-4 text-blue-600">
+
+                            <div>
+                                <p class="font-semibold">
+                                    {{ $item->gear_item_name }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    Serial: {{ $item->gear_serial }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <span class="font-semibold text-blue-700">
+                            ₱{{ number_format($item->daily_fee, 2) }}/day
+                        </span>
                     </label>
+                @empty
+                    <p class="text-gray-500 bg-gray-100 p-4 rounded-lg">
+                        No available equipment at the moment.
+                    </p>
+                @endforelse
+            </div>
 
-                    <select name="diver_id"
-                            class="w-full border border-gray-300 rounded-lg p-3"
-                            required>
+            <div class="flex gap-3">
+                <button type="submit"
+                    class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-semibold">
+                    Save Rental
+                </button>
 
-                        <option value="">-- Select Diver --</option>
-
-                        @foreach ($divers as $diver)
-                            <option value="{{ $diver->id }}"
-                                {{ old('diver_id') == $diver->id ? 'selected' : '' }}>
-                                {{ $diver->diver_name }}
-                                - {{ $diver->certification_level }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                </div>
-
-                <!-- Dive Site -->
-                <div class="mb-6">
-                    <label class="block font-semibold text-gray-700 mb-2">
-                        Select Dive Site
-                    </label>
-
-                    <select name="dive_site_id"
-                            class="w-full border border-gray-300 rounded-lg p-3"
-                            required>
-
-                        <option value="">-- Select Dive Site --</option>
-
-                        @foreach ($diveSites as $site)
-                            <option value="{{ $site->id }}"
-                                {{ old('dive_site_id') == $site->id ? 'selected' : '' }}>
-                                {{ $site->dive_site_name }}
-                            </option>
-                        @endforeach
-
-                    </select>
-                </div>
-
-                <!-- Rental Start -->
-                <div class="mb-6">
-                    <label class="block font-semibold text-gray-700 mb-2">
-                        Rental Start Date
-                    </label>
-
-                    <input type="date"
-                           name="rental_start"
-                           value="{{ old('rental_start') }}"
-                           class="w-full border border-gray-300 rounded-lg p-3"
-                           required>
-                </div>
-
-                <!-- Rental End -->
-                <div class="mb-6">
-                    <label class="block font-semibold text-gray-700 mb-2">
-                        Rental End Date
-                    </label>
-
-                    <input type="date"
-                           name="rental_end"
-                           value="{{ old('rental_end') }}"
-                           class="w-full border border-gray-300 rounded-lg p-3"
-                           required>
-                </div>
-
-                <!-- Buttons -->
-                <div class="flex justify-end gap-3 mt-8">
-
-                    <a href="{{ route('rentals.index') }}"
-                       class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">
-                        Cancel
-                    </a>
-
-                    <button type="submit"
-                            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-                        Save Rental
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
+                <a href="{{ route('rentals.index') }}"
+                    class="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
+
+</div>
 
 </body>
 </html>

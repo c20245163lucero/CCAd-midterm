@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreEquipmentRentalRequest;
 use App\Models\EquipmentRental;
 use App\Models\Diver;
 use App\Models\DiveSite;
 use App\Models\DiveEquipment;
+use App\Services\EquipmentRentalService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentRentalController extends Controller
 {
-    // Display all rentals
+    protected EquipmentRentalService $rentalService;
+
+    public function __construct(EquipmentRentalService $rentalService)
+    {
+        $this->rentalService = $rentalService;
+    }
+
     public function index()
     {
         $rentals = EquipmentRental::with([
@@ -22,12 +31,12 @@ class EquipmentRentalController extends Controller
         return view('rentals.index', compact('rentals'));
     }
 
-    // Show create rental form
     public function create()
     {
         $divers = Diver::all();
         $diveSites = DiveSite::all();
-        $equipment = DiveEquipment::all();
+
+        $equipment = DiveEquipment::where('status', 'available')->get();
 
         return view('rentals.create', compact(
             'divers',
@@ -36,24 +45,15 @@ class EquipmentRentalController extends Controller
         ));
     }
 
-    // Save rental
-    public function store(Request $request)
+    public function store(StoreEquipmentRentalRequest $request)
     {
-        $validated = $request->validate([
-            'diver_id' => 'required|exists:divers,id',
-            'dive_site_id' => 'required|exists:dive_sites,id',
-            'rental_start' => 'required|date',
-            'rental_end' => 'required|date|after_or_equal:rental_start',
-        ]);
-
-        EquipmentRental::create($validated);
+        $this->rentalService->createRental($request->validated());
 
         return redirect()
             ->route('rentals.index')
-            ->with('success', 'Rental added successfully!');
+            ->with('success', 'Rental created successfully!');
     }
 
-    // Display one rental
     public function show(EquipmentRental $rental)
     {
         $rental->load([
@@ -65,7 +65,6 @@ class EquipmentRentalController extends Controller
         return view('rentals.show', compact('rental'));
     }
 
-    // Show edit form
     public function edit(EquipmentRental $rental)
     {
         $divers = Diver::all();
@@ -80,7 +79,6 @@ class EquipmentRentalController extends Controller
         ));
     }
 
-    // Update rental
     public function update(Request $request, EquipmentRental $rental)
     {
         $validated = $request->validate([
@@ -97,10 +95,23 @@ class EquipmentRentalController extends Controller
             ->with('success', 'Rental updated successfully!');
     }
 
-    // Delete rental
     public function destroy(EquipmentRental $rental)
     {
-        $rental->delete();
+        DB::transaction(function () use ($rental) {
+            $rental->load('rentalItems.equipment');
+
+            // Make the equipment available again.
+            foreach ($rental->rentalItems as $rentalItem) {
+                if ($rentalItem->equipment) {
+                    $rentalItem->equipment->update([
+                        'status' => 'available',
+                    ]);
+                }
+            }
+
+            // Rental items are removed through the database cascade.
+            $rental->delete();
+        });
 
         return redirect()
             ->route('rentals.index')

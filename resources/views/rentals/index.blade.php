@@ -70,7 +70,7 @@
                             </td>
 
                             <td class="p-4">
-                                {{ $rental->diveSite->dive_site_name ?? 'N/A' }}
+                            {{ $rental->diveSite->site_name ?? 'N/A' }}
                             </td>
 
                             <td class="p-4">

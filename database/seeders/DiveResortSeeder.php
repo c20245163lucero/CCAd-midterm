@@ -9,52 +9,98 @@ class DiveResortSeeder extends Seeder
 {
     public function run(): void
     {
-        $diverId = DB::table('divers')->insertGetId([
-            'first_name' => 'John',
-            'last_name' => 'Diver',
-            'email' => 'john@example.com',
-            'phone' => '09123456789',
-            'created_at' => now(),
-            'updated_at' => now(),
+        // SAMPLE DIVERS
+        DB::table('divers')->insert([
+            [
+                'diver_name' => 'Maria Santos',
+                'certification_level' => 'Open Water',
+                'cert_number' => 'OW-2026-001',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'diver_name' => 'Juan Dela Cruz',
+                'certification_level' => 'Advanced Open Water',
+                'cert_number' => 'AOW-2026-002',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'diver_name' => 'Ana Reyes',
+                'certification_level' => 'Rescue Diver',
+                'cert_number' => 'RD-2026-003',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
-        $siteId = DB::table('dive_sites')->insertGetId([
-            'site_name' => 'Coral Garden',
-            'location' => 'Negros Occidental',
-            'description' => 'Sample diving location.',
-            'price' => 1500.00,
-            'created_at' => now(),
-            'updated_at' => now(),
+        // SAMPLE DIVE SITES
+        DB::table('dive_sites')->insert([
+            [
+                'site_name' => 'Coral Garden',
+                'minimum_certification_level' => 1,
+                'required_max_depth' => 18.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'site_name' => 'Turtle Point',
+                'minimum_certification_level' => 2,
+                'required_max_depth' => 30.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'site_name' => 'Deep Blue Reef',
+                'minimum_certification_level' => 3,
+                'required_max_depth' => 40.00,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
 
-        $equipmentId = DB::table('dive_equipment')->insertGetId([
-            'equipment_name' => 'Diving Mask',
-            'category' => 'Safety Gear',
-            'quantity' => 10,
-            'rental_price' => 150.00,
-            'status' => 'available',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $rentalId = DB::table('equipment_rentals')->insertGetId([
-            'diver_id' => $diverId,
-            'dive_site_id' => $siteId,
-            'rental_date' => now()->toDateString(),
-            'return_date' => null,
-            'total_amount' => 150.00,
-            'status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        DB::table('equipment_rental_items')->insert([
-            'equipment_rental_id' => $rentalId,
-            'dive_equipment_id' => $equipmentId,
-            'quantity' => 1,
-            'price' => 150.00,
-            'created_at' => now(),
-            'updated_at' => now(),
+        // SAMPLE DIVE EQUIPMENT
+        DB::table('dive_equipment')->insert([
+            [
+                'gear_item_name' => 'Scuba Diving Mask',
+                'gear_serial' => 'MASK-001',
+                'daily_fee' => 150.00,
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'gear_item_name' => 'Oxygen Tank',
+                'gear_serial' => 'TANK-001',
+                'daily_fee' => 500.00,
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'gear_item_name' => 'Diving Fins',
+                'gear_serial' => 'FINS-001',
+                'daily_fee' => 200.00,
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'gear_item_name' => 'Wetsuit',
+                'gear_serial' => 'SUIT-001',
+                'daily_fee' => 300.00,
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'gear_item_name' => 'Regulator',
+                'gear_serial' => 'REG-001',
+                'daily_fee' => 350.00,
+                'status' => 'available',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }
